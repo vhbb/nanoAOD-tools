@@ -55,42 +55,22 @@ class VHbbProducer(Module):
             Vtype = 4
             if event.__getattr__("MET_pt") < 150:
                 Vtype = -1
-       
         self.out.fillBranch("Vtype",Vtype)
 
-        self.out.fillBranch("Jet_lepFilter",self.cleanJets(jets,electrons,muons))
+        ## filter jets that overlap with any of the selected leptons
+        allLeptons = zElectrons[:]
+        allLeptons.extend(zMuons)
+        allLeptons.extend(wElectrons)
+        allLeptons.extend(wMuons)
+        jetFilterFlags = [True]*len(jets)
+        for lepton in allLeptons:
+            jetInd = lepton.jetIdx
+            if jetInd >= 0:
+                jetFilterFlags[jetInd] = False
+
+        self.out.fillBranch("Jet_lepFilter",jetFilterFlags)
  
         return True
-
-    def cleanJets(self,jets,electrons,muons):
-        # flag jets which overlap with loose electron or muon
-        jetFlags = [] # bool whether to flag each jet in jets
-        for jet in jets:
-            overlap_muons = []
-            overlap_electrons = []
-            nMuons = jet.nMuons
-            nElectrons = jet.nElectrons
-            passFilter = True # if false then jet overlaps well loose muon or electron
-            if nMuons > 0:
-                overlap_muons.append(muons[jet.muonIdx1])
-            if nMuons > 1:
-                overlap_muons.append(muons[jet.muonIdx2])
-            if nElectrons > 0:
-                overlap_electrons.append(electrons[jet.electronIdx1])
-            if nElectrons > 1:
-                overlap_electrons.append(electrons[jet.electronIdx2])
-            for muon in overlap_muons:
-                if muon.pfRelIso04_all < 0.25 and muon.pt > 15:
-                    passFilter = False
-                    break
-            if passFilter: # only check electrons if not already flagged from muons
-                for electron in overlap_electrons:
-                    if electron.pfRelIso03_all < 0.15 and electron.mvaSpring16GP_WP90 and electron.pt > 15:
-                        passFilter = False
-                        break
-            jetFlags.append(passFilter)
-        return jetFlags
-                   
                 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
