@@ -3,4 +3,6 @@ keep * # start with all
 #drop HLT_* 
 #keepmatch HLT_(Iso)?Mu\d+
 drop *_cleanmask
-drop FatJet_*
+#drop FatJet_*
+drop Photon_*
+drop Tau_*
