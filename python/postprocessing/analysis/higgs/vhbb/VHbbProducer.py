@@ -37,9 +37,9 @@ class VHbbProducer(Module):
         Vtype = -1
 
         wElectrons = [x for x in electrons if x.mvaSpring16GP_WP80 and x.pt > 25 and x.pfRelIso03_all < 0.12]      
-        wMuons = [x for x in muons if x.pt > 25 and x.tightId >= 1 and x.pfRelIso04_all < 0.15]
+        wMuons = [x for x in muons if x.pt > 25 and x.tightId >= 1 and x.pfRelIso04_all < 0.15 and x.dxy < 0.05 and x.dz < 0.2]
         zElectrons = [x for x in electrons if x.pt > 20 and x.mvaSpring16GP_WP90 and x.pfRelIso03_all < 0.15]
-        zMuons = [x for x in muons if x.pt > 20 and x.pfRelIso04_all < 0.25] # muons already preselected with looseId requirement
+        zMuons = [x for x in muons if x.pt > 20 and x.pfRelIso04_all < 0.25 and x.dxy < 0.05 and x.dz < 0.2] # muons already preselected with looseId requirement
 
         zMuons.sort(key=lambda x:x.pt,reverse=True)
         zElectrons.sort(key=lambda x:x.pt,reverse=True)
@@ -107,7 +107,7 @@ class VHbbProducer(Module):
         self.out.fillBranch("Jet_lepFilter",jetFilterFlags)
 
         ## Add explicit indices for selected H(bb) candidate jets
-        jetsForHiggs = [x for x in jets if x.puId>0 and x.jetId>0 and x.pt>20 and abs(x.eta)<2.5]
+        jetsForHiggs = [x for x in jets if x.lepFilter and x.puId>0 and x.jetId>0 and x.pt>20 and abs(x.eta)<2.5]
         if (len(jetsForHiggs) < 2): return False
         hJets = sorted(jetsForHiggs, key = lambda jet : jet.btagCMVA, reverse=True)[0:2]
         hJidx = [jets.index(x) for x in hJets]
